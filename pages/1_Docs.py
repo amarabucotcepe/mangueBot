@@ -35,7 +35,9 @@ from langchain.chat_models import ChatVertexAI
 
 import google.auth
 
-credentials, project_id = google.auth.load_credentials_from_file(get_credentials())
+KEYS = get_credentials()
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = KEYS
+credentials, project_id = google.auth.load_credentials_from_file(KEYS)
 
 ###
 os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
