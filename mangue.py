@@ -86,8 +86,8 @@ if prompt := st.chat_input('Mensagem'):
     vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
 
 
-    with st.chat_message("assistant", avatar='🦀') as f:
-        stream_handler = StreamlitCallbackHandler(st.empty())
+    with st.spinner('Pensando...'):
+        # stream_handler = StreamlitCallbackHandler(st.empty())
         # llm = ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, temperature=temperatura/10, callbacks=[stream_handler])
         llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=512, temperature=temperatura/10)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(k=1), memory=memory)
@@ -95,8 +95,8 @@ if prompt := st.chat_input('Mensagem'):
         msg = response['answer']
         chat_message_history.add_ai_message(msg)
         source = vectorstore.similarity_search(prompt)
+        st.chat_message("assistant", avatar='🦀').write(msg)
+        st.session_state.messages.append({"role": "assistant", "content": msg})
         with st.expander("Ver contexto"):
             for page in source:
                 st.write(page.page_content)
-    st.chat_message("assistant", avatar='🦀').write(msg)
-    st.session_state.messages.append({"role": "assistant", "content": msg})

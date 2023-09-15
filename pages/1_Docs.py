@@ -14,6 +14,7 @@ import uuid
 import os
 from mangue import get_credentials 
 
+
 st.set_page_config(page_title='MangueBot | Docs', page_icon=':crab:', layout="centered", initial_sidebar_state="auto", menu_items=None)
 st.title("Análise de documentos 📑")
 
@@ -78,8 +79,7 @@ if prompt := st.chat_input('Mensagem'):
     embeddings = OpenAIEmbeddings()
     vectorstore = Chroma(collection_name='tcu', persist_directory="./chroma_db", embedding_function=embeddings)
 
-
-    with st.chat_message("assistant", avatar='🤖') as f:
+    with st.spinner('Pensando...'):
         stream_handler = StreamlitCallbackHandler(st.empty())
         # long_llm = ChatOpenAI(model_name='gpt-3.5-turbo-16k', streaming=True, temperature=temperatura/10, callbacks=[stream_handler])
         llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=max_tokens, temperature=temperatura/10)
@@ -88,8 +88,8 @@ if prompt := st.chat_input('Mensagem'):
         msg = response['answer']
         chat_message_history.add_ai_message(msg)
         source = vectorstore.similarity_search(prompt)
+        st.chat_message("assistant", avatar='🤖').write(msg)
+        st.session_state.messages.append({"role": "assistant", "content": msg})
         with st.expander("Ver contexto"):
             for page in source:
                 st.write(page.page_content)
-    st.chat_message("assistant", avatar='🤖').write(msg)
-    st.session_state.messages.append({"role": "assistant", "content": msg})
