@@ -20,7 +20,7 @@ import json
 
 def get_credentials():
     if not(os.path.isfile('credentials.json')):
-        r = requests.get(st.secrets['GOOGLE_APPLICATION_CREDENTIALS'])
+        r = requests.get(st.secrets['CREDENTIALS_PATH'], verify=False)
         data = r.json()
         with open('credentials.json', 'w') as f:
             f.write(json.dumps(data))
@@ -44,7 +44,7 @@ from langchain.chat_models import ChatVertexAI
 import google.auth
 
 KEYS = get_credentials()
-
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = KEYS
 credentials, project_id = google.auth.load_credentials_from_file(KEYS)
 
 ###
