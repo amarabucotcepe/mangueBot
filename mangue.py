@@ -1,11 +1,7 @@
 ### sqlite3
-import importlib
-import subprocess
-
-try:
-    importlib.import_module('sqlite3')
-except ImportError:
-    subprocess.check_call(['pip', 'install', 'pysqlite3'])
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 ###
 
 import streamlit as st
