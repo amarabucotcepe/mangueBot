@@ -1,3 +1,13 @@
+### sqlite3
+import importlib
+import subprocess
+
+try:
+    importlib.import_module('sqlite3')
+except ImportError:
+    subprocess.check_call(['pip', 'install', 'pysqlite3'])
+###
+
 import streamlit as st
 
 from langchain.chains import ConversationalRetrievalChain
