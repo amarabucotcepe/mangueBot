@@ -14,17 +14,20 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.memory import ConversationTokenBufferMemory, ConversationBufferMemory
 import uuid
+import requests
 import os
 from mangue import get_credentials, get_eastereggs
-
-
 
 st.set_page_config(page_title='MangueBot | Dados', page_icon=':crab:', layout="centered", initial_sidebar_state="auto", menu_items=None)
 st.title("Análise de dados 🎲")
 origem = 'https://portaldatransparencia.gov.br/download-de-dados/orcamento-despesa'
 st.write('Dados:', origem)
-with st.expander("Dicinoario de dados", ):
-    table = pd.read_html('https://portaldatransparencia.gov.br/pagina-interna/603417-dicionario-de-dados-orcamento-da-despesa')[0].dropna(axis=0)
+with st.expander("Dicionário de dados"):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    }
+    r = requests.get('https://portaldatransparencia.gov.br/pagina-interna/603417-dicionario-de-dados-orcamento-da-despesa', headers=headers, verify=False)
+    table = pd.read_html(r.content, header=0)[0].dropna(axis=0)
     table
 # dicionario = 'https://portaldatransparencia.gov.br/pagina-interna/603417-dicionario-de-dados-orcamento-da-despesa'
 # st.write('Dicionario:', dicionario)
@@ -93,7 +96,7 @@ if prompt := st.chat_input('Mensagem'):
         with get_openai_callback() as cb:
             sql = db_chain.invoke({'question': prompt})
             # st.session_state.messages.append({"role": "assistant", "content": response})
-            st.chat_message("assistant", avatar='🤖').write(sql)
+            # st.chat_message("assistant", avatar='🤖').write(sql)
             result = db.run(sql)
             # st.chat_message("assistant", avatar='🤖').write(result)
             get_eastereggs(prompt)
