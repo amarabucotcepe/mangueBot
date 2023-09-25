@@ -15,7 +15,9 @@ from langchain.vectorstores import Chroma
 from langchain.memory import ConversationTokenBufferMemory, ConversationBufferMemory
 import uuid
 import os
-from mangue import get_credentials 
+from mangue import get_credentials, get_eastereggs
+
+
 
 st.set_page_config(page_title='MangueBot | Dados', page_icon=':crab:', layout="centered", initial_sidebar_state="auto", menu_items=None)
 st.title("Análise de dados 🎲")
@@ -81,9 +83,6 @@ if prompt := st.chat_input('Mensagem'):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar='🕵️‍♂️').write(prompt)
     chat_message_history.add_user_message(prompt)
-    
-    embeddings = OpenAIEmbeddings()
-    vectorstore = Chroma(collection_name='tcu', persist_directory="./chroma_db", embedding_function=embeddings)
 
     with st.spinner('Pensando...'):
         long_llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=max_tokens, temperature=temperatura/10)
@@ -97,6 +96,7 @@ if prompt := st.chat_input('Mensagem'):
             st.chat_message("assistant", avatar='🤖').write(sql)
             result = db.run(sql)
             # st.chat_message("assistant", avatar='🤖').write(result)
+            get_eastereggs(prompt)
             response = formater.invoke({'input': result})
             # msg = response.content
             # st.chat_message("assistant", avatar='🤖').write(response)

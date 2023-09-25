@@ -26,6 +26,18 @@ def get_credentials():
             f.write(json.dumps(data))
     return 'credentials.json'
 
+def get_eastereggs(prompt):
+    if prompt.find('inovação') != -1:
+        st.balloons()
+        return True
+    if prompt.find('licitação') != -1:
+        st.snow()
+        return True
+    if prompt.find('direito') != -1:
+        st.snow()
+        return True
+    return False
+
 st.set_page_config(page_title='MangueBot', page_icon=':crab:', layout="centered", initial_sidebar_state="auto", menu_items=None)
 st.title("Hello Mangue! :crab:")
 
@@ -92,10 +104,12 @@ if prompt := st.chat_input('Mensagem'):
         llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=512, temperature=temperatura/10)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(k=1), memory=memory)
         response = qa(prompt)
+        
         msg = response['answer']
         chat_message_history.add_ai_message(msg)
         source = vectorstore.similarity_search(prompt)
         st.chat_message("assistant", avatar='🦀').write(msg)
+        get_eastereggs(prompt)
         st.session_state.messages.append({"role": "assistant", "content": msg})
         with st.expander("Ver contexto"):
             for page in source:

@@ -12,7 +12,7 @@ from langchain.vectorstores import Chroma
 from langchain.memory import ConversationTokenBufferMemory, ConversationBufferMemory
 import uuid
 import os
-from mangue import get_credentials 
+from mangue import get_credentials, get_eastereggs
 
 
 st.set_page_config(page_title='MangueBot | Docs', page_icon=':crab:', layout="centered", initial_sidebar_state="auto", menu_items=None)
@@ -90,6 +90,7 @@ if prompt := st.chat_input('Mensagem'):
         msg = response['answer']
         chat_message_history.add_ai_message(msg)
         source = vectorstore.similarity_search(prompt)
+        get_eastereggs(prompt)
         st.chat_message("assistant", avatar='🤖').write(msg)
         st.session_state.messages.append({"role": "assistant", "content": msg})
         with st.expander("Ver contexto"):
