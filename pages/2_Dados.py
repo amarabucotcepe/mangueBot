@@ -55,7 +55,8 @@ credentials, project_id = google.auth.load_credentials_from_file(KEYS)
 os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
     
 with st.sidebar:
-    st.subheader('Modelo: Google - chat-bison')
+    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
+    # st.subheader('Modelo: Google - chat-bison')
     temperatura = st.slider('Criatividade', min_value=0, max_value=10, value=0, step=1, disabled=True)
     max_tokens = st.slider('Tamanho da resposta', min_value=128, max_value=2048, value=512, step=1)
     if st.button("Limpar", type='primary'):
@@ -82,15 +83,20 @@ for msg in st.session_state.messages:
 
 
 if prompt := st.chat_input('Mensagem'):
+    if not openai_api_key:
+        st.info("Please add your OpenAI API key to continue.")
+        st.stop()
+
+    os.environ['OPENAI_API_KEY'] = openai_api_key
 
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar='🕵️‍♂️').write(prompt)
     chat_message_history.add_user_message(prompt)
 
     with st.spinner('Pensando...'):
-        long_llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=max_tokens, temperature=temperatura/10)
+        # long_llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=max_tokens, temperature=temperatura/10)
+        long_llm = ChatOpenAI(model_name='gpt-3.5-turbo-0613', streaming=True, temperature=temperatura/10)
         formater = PromptTemplate.from_template('Organize os seguintes dados no formato de uma tabela com valores em formato moeda: {input}') | long_llm
-        # llm = ChatOpenAI(model_name='gpt-3.5-turbo-0613', streaming=True, temperature=temperatura/10, callbacks=[stream_handler])
         db_chain = create_sql_query_chain(long_llm, db)
         # db_chain = SQLDatabaseChain.from_llm(long_llm, db, verbose=True)
         with get_openai_callback() as cb:

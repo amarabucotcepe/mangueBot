@@ -12,6 +12,8 @@ from langchain.memory.chat_message_histories import SQLChatMessageHistory
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.memory import ConversationBufferMemory
+from langchain.chat_models import ChatOpenAI
+
 
 import uuid
 import os
@@ -61,15 +63,17 @@ credentials, project_id = google.auth.load_credentials_from_file(KEYS)
 
 ###
 
-os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
     
 with st.sidebar:
-    st.subheader('Modelo: Google - chat-bison')
+    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
+    # st.subheader('Modelo: Google - chat-bison')
     temperatura = st.slider('Criatividade', min_value=0, max_value=10, value=7, step=1)
     if st.button("Limpar", type='primary'):
         del st.session_state['session_id']
         del st.session_state['messages']
         st.experimental_rerun()
+
+# os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "Olá, eu sou o MangueBot, o seu assistente virtual sobre Mangue Beat. \
@@ -89,7 +93,11 @@ for msg in st.session_state.messages:
 
 
 if prompt := st.chat_input('Mensagem'):
+    if not openai_api_key:
+        st.info("Please add your OpenAI API key to continue.")
+        st.stop()
 
+    os.environ['OPENAI_API_KEY'] = openai_api_key
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar='🕵️‍♂️').write(prompt)
     chat_message_history.add_user_message(prompt)
@@ -100,8 +108,8 @@ if prompt := st.chat_input('Mensagem'):
 
     with st.spinner('Pensando...'):
         # stream_handler = StreamlitCallbackHandler(st.empty())
-        # llm = ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, temperature=temperatura/10, callbacks=[stream_handler])
-        llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=512, temperature=temperatura/10)
+        llm = ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, temperature=temperatura/10, callbacks=[stream_handler])
+        # llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=512, temperature=temperatura/10)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(k=1), memory=memory)
         response = qa(prompt)
         

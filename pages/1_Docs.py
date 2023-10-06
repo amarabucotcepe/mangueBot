@@ -40,10 +40,11 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = KEYS
 credentials, project_id = google.auth.load_credentials_from_file(KEYS)
 
 ###
-os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
+# os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
     
 with st.sidebar:
-    st.subheader('Modelo: Google - chat-bison')
+    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
+    # st.subheader('Modelo: Google - chat-bison')
     temperatura = st.slider('Criatividade', min_value=0, max_value=10, value=0, step=1, disabled=True)
     k = st.slider('Documentos', min_value=1, max_value=5, value=2, step=1)
     max_tokens = st.slider('Tamanho da resposta', min_value=128, max_value=2048, value=512, step=1)
@@ -73,6 +74,11 @@ for msg in st.session_state.messages:
 
 
 if prompt := st.chat_input('Mensagem'):
+    if not openai_api_key:
+        st.info("Please add your OpenAI API key to continue.")
+        st.stop()
+
+    os.environ['OPENAI_API_KEY'] = openai_api_key
 
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar='🕵️‍♂️').write(prompt)
@@ -83,8 +89,8 @@ if prompt := st.chat_input('Mensagem'):
 
     with st.spinner('Pensando...'):
         stream_handler = StreamlitCallbackHandler(st.empty())
-        # long_llm = ChatOpenAI(model_name='gpt-3.5-turbo-16k', streaming=True, temperature=temperatura/10, callbacks=[stream_handler])
-        llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=max_tokens, temperature=temperatura/10)
+        llm = ChatOpenAI(model_name='gpt-3.5-turbo-16k', streaming=True, temperature=temperatura/10)
+        # llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=max_tokens, temperature=temperatura/10)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(k=k), memory=memory)
         response = qa(prompt)
         msg = response['answer']
