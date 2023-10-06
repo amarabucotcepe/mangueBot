@@ -108,7 +108,7 @@ if prompt := st.chat_input('Mensagem'):
 
     with st.spinner('Pensando...'):
         # stream_handler = StreamlitCallbackHandler(st.empty())
-        llm = ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, temperature=temperatura/10, callbacks=[stream_handler])
+        llm = ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, temperature=temperatura/10)
         # llm = ChatVertexAI(credentials=credentials, project_id=project_id, max_output_tokens=512, temperature=temperatura/10)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(k=1), memory=memory)
         response = qa(prompt)
